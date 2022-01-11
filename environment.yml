@@ -1,0 +1,34 @@
+name: gridmet_tools_IS
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.8
+  - pip
+  - click
+  - pygeoapi
+  - xagg
+  - pandas
+  - geopandas
+  - rasterstats
+  - xarray
+  - dask
+  - bottleneck
+  - numpy
+  - metpy
+  - netcdf4
+  - cartopy
+  - geoviews
+  - matplotlib
+  - folium
+  - pygeos
+  - jupyterlab
+  - babel
+  - hvplot
+  - esmpy
+  - xesmf
+  - geoviews
+  - rioxarray
+  - bottleneck
+  - pip:
+    - git+https://github.com/rmcd-mscb/grd2shp_xagg.git@main

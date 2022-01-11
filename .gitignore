@@ -1,0 +1,11 @@
+# git ignoring the following files types:
+*.nc
+*.pickle
+*.shp
+*.sbn
+*.prj
+*.sbx
+*.shp.xml
+*.shx
+*.dbf
+
