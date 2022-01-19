@@ -36,17 +36,19 @@ def g2shp_regridding(polygon_file_path,
                      lon_min, lon_max, lat_min, lat_max,
                      g2s_file_prefix = 'tmp'):
     """
-    :param str polygon_file_path:
-    :param str output_data_folder:
-    :param str list var_short: data variable short name or list of data variable short names. Must be one of the following: ['tmmx', 'tmmn', 'pr', 'srad', 'vs', 'rmax', 'rmin', 'sph']
-    :param str start_date:
-    :param str end_date:
-    :param str lon_min:
-    :param str lon_max:
-    :param str lat_min:
-    :param str lat_max:
+    :param str polygon_file_path: path to hru shapefile used for regridding of gridMET data
+    :param str output_data_folder: folder location where outputs such as weights pickle file and netcdf output file will reside
+    :param str/list var_short: data variable short name or list of data variable short names. Must be one of the following: ['tmmx', 'tmmn', 'pr', 'srad', 'vs', 'rmax', 'rmin', 'sph']
+    :param str start_date: Start date of data collection yyyy-mm-dd
+    :param str end_date: End date of data collection yyyy-mm-dd
+    :param str lon_min: bbox of aoi longitude min
+    :param str lon_max: bbox of aoi longitude max
+    :param str lat_min: bbox of aoi latitude min
+    :param str lat_max: bbox of aoi latitude max
+    :param str g2s_file_prefix: prefix used to save the grd2shp_xarray
     :return: g2s array
     """
+
     ## Create dictionary of short variable names with official long variable name
     data_vars_shrt_all = ['tmmx', 'tmmn', 'pr', 'srad', 'vs', 'rmax', 'rmin', 'sph']
     data_vars_long_all = ['daily_maximum_temperature', 'daily_minimum_temperature',
@@ -78,6 +80,7 @@ def g2shp_regridding(polygon_file_path,
     for i in var_short:
         # Get url:
         print(i)
+        ## source: http://thredds.northwestknowledge.net:8080/thredds/reacch_climate_MET_aggregated_catalog.html
         url = 'http://thredds.northwestknowledge.net:8080/thredds/dodsC/agg_met_{}_1979_CurrentYear_CONUS.nc'.format(i)
         print(url)
 
@@ -147,94 +150,3 @@ g2shp_regridding(polygon_file_path = gdf_nhru02_path,
 #
 # gdf_nhru02 = gpd.read_file(polygon_file_path)
 # gdf_nhru02["pr"] = xr_mapped["pr"][:,0]
-
-
-######## OLD CODE ################################
-
-# ## API urls
-# # tmax_url = 'http://thredds.northwestknowledge.net:8080/thredds/dodsC/agg_met_tmmx_1979_CurrentYear_CONUS.nc'
-# # tmin_url = 'http://thredds.northwestknowledge.net:8080/thredds/dodsC/agg_met_tmmn_1979_CurrentYear_CONUS.nc'
-# # prcp_url = 'http://thredds.northwestknowledge.net:8080/thredds/dodsC/agg_met_pr_1979_CurrentYear_CONUS.nc'
-# # swave_rad_url = 'http://thredds.northwestknowledge.net:8080/thredds/dodsC/agg_met_srad_1979_CurrentYear_CONUS.nc'
-# # wind_vel_url = 'http://thredds.northwestknowledge.net:8080/thredds/dodsC/agg_met_vs_1979_CurrentYear_CONUS.nc'
-# # rmax_url = 'http://thredds.northwestknowledge.net:8080/thredds/dodsC/agg_met_rmax_1979_CurrentYear_CONUS.nc'
-# # rmin_url = 'http://thredds.northwestknowledge.net:8080/thredds/dodsC/agg_met_rmin_1979_CurrentYear_CONUS.nc'
-# # sph_url = 'http://thredds.northwestknowledge.net:8080/thredds/dodsC/agg_met_sph_1979_CurrentYear_CONUS.nc'
-#
-# if type(data_vars)== str:
-#     data_vars = [data_vars]
-#     print(data_vars)
-#
-# data_xr_ds_list = []
-#
-# ## Creating ds
-# for i in data_vars:
-#     print(i)
-#     url = 'http://thredds.northwestknowledge.net:8080/thredds/dodsC/agg_met_{}_1979_CurrentYear_CONUS.nc'.format(i)
-#     print(url)
-#     start = time.perf_counter()
-#     df = xr.open_dataset(url +'#fillmismatch')
-#     df_subset = df.sel(day=slice(start_date, end_date),
-#                          lon=slice(lon_min, lon_max),
-#                          lat=slice(lat_max, lat_min))
-#     end = time.perf_counter()
-#     data_xr_ds_list.append(df_subset)
-#
-#     print('finish in {} seconds'.format(round(start - end), 2))
-#
-# # Creating dictionary for next process
-# data_dict = dict(zip(data_vars, data_xr_ds_list))
-#
-# print(data_dict)
-#
-# data_xr_weightmap_list = []
-#
-# ## Did this for all the files bit not necessary
-# for j in data_dict:
-#     # Produce weightmap
-#     # uncomment below if first time through notebook to generate weights
-#     #start = time.perf_counter()
-#     print(data_dict[j])
-#     print(j)
-#     weightmap = xa.pixel_overlaps(data_dict[j], gdf_nhru02)
-#     end = time.perf_counter()
-#     print(f'finished agg in {round(end-start, 2)} second(s)')
-#
-#     name = str(j)
-#     print(name)
-#     print('{}'.format(name))
-#
-#     # save weights for future use
-#     with open('./data/nhru_02_weights_{}.pickle'.format(name), 'wb') as file:
-#         pickle.dump(weightmap, file)
-#
-# # initialize Grd2ShpXagg()
-# g2s = grd2shp_xagg.Grd2ShpXagg()
-# g2s.initialize(
-#     grd= list(data_dict.values()),
-#     shp=gdf_nhru02,
-#     wght_file='./data/nhru_02_weights_srad.pickle',
-#     time_var='day',
-#     lat_var='lat',
-#     lon_var='lon',
-#     var=['daily_mean_shortwave_radiation_at_surface', 'precipitation_amount'],
-#
-#     var_output= list(data_dict.keys()),
-#     ctype=0,
-# )
-#
-# ## RUNS SUCCESSFULLY TILL HER ##
-# # Regridding
-# start = time.perf_counter()
-# g2s.run_weights()
-# end = time.perf_counter()
-# print(f'finished agg in {round(end-start, 2)} second(s)')
-#
-# print(type(g2s))
-# g2s.write_gm_file(opath=".", prefix="t_sradpr_")
-#
-# xr_mapped = xr.open_dataset('t_srad_prclimate_2022_01_19.nc', decode_times=False)
-#
-# gdf_nhru02["tmax"] = xr_mapped["tmax"][:,0]
-# ds_tmax_1["daily_maximum_temperature"] = ds_tmax_1["daily_maximum_temperature"] - 459.67
-#
