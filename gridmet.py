@@ -27,7 +27,6 @@ data_vars_long_all = ['daily_maximum_temperature', 'daily_minimum_temperature',
 
 ## Shorter list of data variables for testing:
 data_vars_grd2shp_shrt = ['tmmn', 'vs']
-data_vars_grd2shp_long = ['precipitation_amount', 'daily_mean_shortwave_radiation_at_surface']
 
 ## Full function
 def g2shp_regridding(polygon_file_path,
