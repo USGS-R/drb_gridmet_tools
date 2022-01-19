@@ -47,6 +47,7 @@ for i in data_url_list:
 
     data_xr_ds_list.append(df_subset)
 
+# Creating dictionary for next process
 data_dict = dict(zip(data_vars, data_xr_ds_list))
 
 print(data_dict)
@@ -64,22 +65,18 @@ for j in data_dict:
     end = time.perf_counter()
     print(f'finished agg in {round(end-start, 2)} second(s)')
 
-    # data_xr_weightmap_list.append(weightmap)
-
     name = str(j)
     print(name)
     print('{}'.format(name))
 
+    # save weights for future use
     with open('./data/nhru_02_weights_{}.pickle'.format(name), 'wb') as file:
         pickle.dump(weightmap, file)
-
-# save weights for future use
-
 
 # initialize Grd2ShpXagg()
 g2s = grd2shp_xagg.Grd2ShpXagg()
 g2s.initialize(
-    grd= data_dict.values,
+    grd= list(data_dict.values()),
     shp=gdf_nhru02,
     wght_file='./data/nhru_02_weights_tmax.pickle',
     time_var='day',
@@ -90,10 +87,12 @@ g2s.initialize(
          'daily_mean_wind_speed', 'daily_maximum_relative_humidity',
          'daily_minimum_relative_humidity','daily_mean_specific_humidity'],
 
-    var_output= data_vars,
+    var_output= list(data_dict.keys()),
     ctype=0,
 )
 
+## RUNS SUCCESSFULLY TILL HER ##
+## stopped here - still need to run below.
 # Regridding
 start = time.perf_counter()
 g2s.run_weights()
