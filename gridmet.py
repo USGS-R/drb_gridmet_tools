@@ -12,12 +12,13 @@ import xarray as xr
 # Variables
 gdf_nhru02_path = './data/nhru_02/nhru_02.shp'
 start_date = '1979-01-01'
-end_date = '1989-01-01'
+end_date = '2021-01-01'
 lon_min = -79
 lon_max = -67
 lat_min = 36
 lat_max = 42
 output_path = './data/'
+
 ## official list of variables needed for drb-inland-salinity model
 data_vars_shrt_all = ['tmmx', 'tmmn', 'pr', 'srad', 'vs','rmax','rmin','sph']
 data_vars_long_all = ['daily_maximum_temperature', 'daily_minimum_temperature',
@@ -107,7 +108,7 @@ def g2shp_regridding(polygon_file_path,
     start = time.perf_counter()
     weightmap = xa.pixel_overlaps(data_dict[wghtmap_var], gdf)
     end = time.perf_counter()
-    print(f'finished agg in {round(end - start, 2)} second(s)')
+    print('finished agg in {} second(s)'.format(round(end - start, 2)))
 
     with open(output_data_folder + 'grd2shp_weights_{}.pickle'.format(wghtmap_var), 'wb') as file:
         pickle.dump(weightmap, file)
@@ -130,7 +131,7 @@ def g2shp_regridding(polygon_file_path,
     start = time.perf_counter()
     g2s.run_weights()
     end = time.perf_counter()
-    print(f'finished agg in {round(end - start, 2)} second(s)')
+    print('finished agg in {} second(s)'.format(round(end - start, 2)))
 
     print(type(g2s))
     g2s.write_gm_file(opath=output_data_folder, prefix= g2s_file_prefix)
@@ -139,14 +140,15 @@ def g2shp_regridding(polygon_file_path,
 
 
 g2shp_regridding(polygon_file_path = gdf_nhru02_path,
-                var_short = data_vars_grd2shp_shrt,
+                var_short = data_vars_shrt_all,
                  output_data_folder=output_path,
                  start_date=start_date, end_date=end_date,
                  lat_max=lat_max, lat_min=lat_min,
                  lon_max=lon_max, lon_min=lon_min,
-                 g2s_file_prefix = 'test3_')
+                 g2s_file_prefix = 'mpf_')
 
-# xr_mapped = xr.open_dataset('t_srad_prclimate_2022_01_19.nc', decode_times=False)
-#
-# gdf_nhru02 = gpd.read_file(polygon_file_path)
-# gdf_nhru02["pr"] = xr_mapped["pr"][:,0]
+# xr_mapped = xr.open_dataset('./data/mpf_climate_2022_01_21.nc', decode_times=False)
+# gdf_nhru02 = gpd.read_file(gdf_nhru02_path)
+# gdf_nhru02["tmmn"] = xr_mapped["tmmn"][:,0]
+# gdf_nhru02.plot(column = 'tmmn', legend = True)
+#xr_mapped.isel(geomid=3).tmmn.plot()

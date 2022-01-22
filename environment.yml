@@ -18,7 +18,6 @@ dependencies:
   - metpy
   - netcdf4
   - cartopy
-  - geoviews
   - matplotlib
   - folium
   - pygeos
