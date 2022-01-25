@@ -44,7 +44,7 @@ def get_gridmet_datasets(variable, start_date, end_date, polygon_as_bbox = None,
         if isinstance(polygon_as_bbox, geopandas.geodataframe.GeoDataFrame):
             print('polygon is geodataframe')
             pass
-        elif os.path.isfile(polygon_as_bbox) == True:
+        elif os.path.isfile(polygon_as_bbox):
             print('polygon is path to shapefile')
             polygon_as_bbox = gpd.read_file(polygon_as_bbox)
         else:
@@ -87,7 +87,7 @@ def get_gridmet_datasets(variable, start_date, end_date, polygon_as_bbox = None,
     return xarray_dict
 
 
-def create_weightmap(polygon, xarray_dict, output_data_folder, weightmap_var = None):
+def create_weightmap(xarray_dict, polygon, output_data_folder, weightmap_var = None):
 
     """
     :param geodataframe polygon: geodataframe polygon or multipolygon
@@ -96,6 +96,15 @@ def create_weightmap(polygon, xarray_dict, output_data_folder, weightmap_var = N
     :param str weightmap_var: variable used to make weightfile + naming of output e.i. weightmap_var = 'tmin'. If none, first variable of dict keys will be used.
     :return: output path to weightmap pickle file
     """
+    if isinstance(polygon, geopandas.geodataframe.GeoDataFrame):
+        print('polygon is geodataframe')
+        pass
+    elif os.path.isfile(polygon):
+        print('polygon is path to shapefile')
+        polygon = gpd.read_file(polygon_as_bbox)
+    else:
+        raise TypeError('polygon should str path to shapefile or geodataframe')
+
     ## Name output weightmap_file
     if weightmap_var is None:
         # If non var given
@@ -118,8 +127,7 @@ def create_weightmap(polygon, xarray_dict, output_data_folder, weightmap_var = N
     return weightmap_file
 
 
-def g2shp_regridding(xarray_dict, weightmap_file, output_data_folder, g2s_file_prefix,
-                     g2s_time_var = 'day', g2s_lat_var = 'lat' , g2s_lon_var = 'lon'):
+def g2shp_regridding(xarray_dict, weightmap_file, output_data_folder, g2s_file_prefix, g2s_time_var = 'day', g2s_lat_var = 'lat' , g2s_lon_var = 'lon'):
 
     """
     :param dict xarray_dict: dictionary of gridmet data. the output of get_gridmet_datasets()
@@ -179,7 +187,7 @@ def g2shp_regridding(xarray_dict, weightmap_file, output_data_folder, g2s_file_p
     return g2s
 
 ####### Run function code ###
-
+#
 # xarray_dict = get_gridmet_datasets(variable = data_vars_shrt_all,
 #                                    start_date = start_date, end_date = end_date,
 #                                    polygon_as_bbox = gdf)
@@ -193,7 +201,7 @@ def g2shp_regridding(xarray_dict, weightmap_file, output_data_folder, g2s_file_p
 #
 # g2shp_regridding(xarray_dict = xarray_dict,
 #                  weightmap_file = './data/grd2shp_weights_tmmx.pickle',
-#                  g2s_file_prefix ='tmp_tmmn_pr_',
+#                  g2s_file_prefix ='all_',
 #                  output_data_folder = output_path)
 
 
