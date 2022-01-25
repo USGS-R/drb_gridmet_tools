@@ -29,5 +29,7 @@ dependencies:
   - geoviews
   - rioxarray
   - bottleneck
+  - numba
+  - os
   - pip:
     - git+https://github.com/rmcd-mscb/grd2shp_xagg.git@main
