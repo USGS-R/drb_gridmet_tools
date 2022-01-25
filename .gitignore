@@ -8,4 +8,4 @@
 *.shp.xml
 *.shx
 *.dbf
-
+*.ipynb_checkpoints/
