@@ -188,9 +188,9 @@ def g2shp_regridding(xarray_dict, weightmap_file, output_data_folder, g2s_file_p
 
 ####### Run function code #########
 #
-xarray_dict = get_gridmet_datasets(variable = data_vars_shrt_all,
-                                   start_date = start_date, end_date = end_date,
-                                   polygon_as_bbox = gdf)
+# xarray_dict = get_gridmet_datasets(variable = data_vars_shrt_all,
+#                                    start_date = start_date, end_date = end_date,
+#                                    polygon_as_bbox = gdf)
 #                     lon_min = -80, lat_min = 36, lon_max = -71, lat_max = 45
 #
 # create_weightmap(polygon = gdf,
