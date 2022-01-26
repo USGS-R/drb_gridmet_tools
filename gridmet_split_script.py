@@ -186,12 +186,12 @@ def g2shp_regridding(xarray_dict, weightmap_file, output_data_folder, g2s_file_p
 
     return g2s
 
-####### Run function code ###
+####### Run function code #########
 #
-# xarray_dict = get_gridmet_datasets(variable = data_vars_shrt_all,
-#                                    start_date = start_date, end_date = end_date,
-#                                    polygon_as_bbox = gdf)
-# #                     lon_min = -80, lat_min = 36, lon_max = -71, lat_max = 45
+xarray_dict = get_gridmet_datasets(variable = data_vars_shrt_all,
+                                   start_date = start_date, end_date = end_date,
+                                   polygon_as_bbox = gdf)
+#                     lon_min = -80, lat_min = 36, lon_max = -71, lat_max = 45
 #
 # create_weightmap(polygon = gdf,
 #                  xarray_dict = xarray_dict,
@@ -205,8 +205,13 @@ def g2shp_regridding(xarray_dict, weightmap_file, output_data_folder, g2s_file_p
 #                  output_data_folder = output_path)
 
 
+######### Other ##########
+
+## subset of dict for testing
 # subset = {key: xarray_dict[key] for key in ['tmmn', 'pr']}
-# xr_mapped = xr.open_dataset('./data/tmpclimate_2022_01_25.nc', decode_times=False)
-# gdf["tmmn"] = xr_mapped["tmmn"][:,0]
+
+## Viewing output
+#xr_mapped = xr.open_dataset('./data/all_climate_2022_01_25.nc', decode_times=False)
+#gdf["tmmn"] = xr_mapped["tmmn"][:,0]
 # gdf.plot(column = 'tmmn', legend = True)
 # xr_mapped.isel(geomid=3).tmmn.plot()
