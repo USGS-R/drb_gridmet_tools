@@ -30,7 +30,7 @@ dependencies:
   - rioxarray
   - bottleneck
   - numba
-  - os
-  - datetime
   - pip:
     - git+https://github.com/rmcd-mscb/grd2shp_xagg.git@main
+    - datetime
+

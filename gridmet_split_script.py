@@ -43,10 +43,12 @@ def get_gridmet_datasets(variable, start_date, end_date, polygon_as_bbox = None,
     if polygon_as_bbox is not None:
         if isinstance(polygon_as_bbox, geopandas.geodataframe.GeoDataFrame):
             print('polygon is geodataframe')
+            print(polygon_as_bbox.total_bounds)
             pass
         elif os.path.isfile(polygon_as_bbox):
             print('polygon is path to shapefile')
             polygon_as_bbox = gpd.read_file(polygon_as_bbox)
+            print(polygon_as_bbox.total_bounds)
         else:
              raise TypeError('polygon_as_bbox should str path to shapefile or geodataframe')
 
@@ -187,28 +189,28 @@ def g2shp_regridding(xarray_dict, weightmap_file, output_data_folder, g2s_file_p
     return g2s
 
 ####### Run function code #########
-#
-# xarray_dict = get_gridmet_datasets(variable = data_vars_shrt_all,
-#                                    start_date = start_date, end_date = end_date,
-#                                    polygon_as_bbox = gdf)
-#                     lon_min = -80, lat_min = 36, lon_max = -71, lat_max = 45
-#
-# create_weightmap(polygon = gdf,
-#                  xarray_dict = xarray_dict,
-#                  output_data_folder = output_path,
-#                  weightmap_var = 'tmmx')
-#
-#
-# g2shp_regridding(xarray_dict = xarray_dict,
-#                  weightmap_file = './data/grd2shp_weights_tmmx.pickle',
-#                  g2s_file_prefix ='all_',
-#                  output_data_folder = output_path)
+
+xarray_dict = get_gridmet_datasets(variable = data_vars_shrt_all,
+                                   start_date = start_date, end_date = end_date,
+                                   polygon_as_bbox = gdf)
+#                    lon_min = -80, lat_min = 36, lon_max = -71, lat_max = 45
+
+create_weightmap(polygon = gdf,
+                 xarray_dict = xarray_dict,
+                 output_data_folder = output_path,
+                 weightmap_var = 'tmmx')
+
+
+g2shp_regridding(xarray_dict = xarray_dict,
+                 weightmap_file = './data/grd2shp_weights_tmmx.pickle',
+                 g2s_file_prefix ='dps_',
+                 output_data_folder = output_path)
 
 
 ######### Other ##########
 
 ## subset of dict for testing
-# subset = {key: xarray_dict[key] for key in ['tmmn', 'pr']}
+# subset = {key: xarray_dict[key] for key in ['pr']}
 
 ## Viewing output
 #xr_mapped = xr.open_dataset('./data/all_climate_2022_01_25.nc', decode_times=False)
