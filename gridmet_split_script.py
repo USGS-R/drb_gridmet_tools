@@ -71,7 +71,6 @@ def get_gridmet_datasets(variable, start_date, end_date, polygon_for_bbox = None
 
     return xarray_dict
 
-
 def create_weightmap(xarray_dict, polygon, output_data_folder, weightmap_var = None):
 
     """
@@ -110,7 +109,6 @@ def create_weightmap(xarray_dict, polygon, output_data_folder, weightmap_var = N
         pickle.dump(weightmap, file)
 
     return weightmap_file
-
 
 def g2shp_regridding(xarray_dict, polygon, weightmap_file, output_data_folder, g2s_file_prefix, g2s_time_var = 'day', g2s_lat_var = 'lat', g2s_lon_var = 'lon'):
 
@@ -176,6 +174,7 @@ if __name__ =='__main__':
     data_vars_shrt_all = ['tmmx', 'tmmn', 'pr', 'srad', 'vs','rmax','rmin','sph']
     ### drb catchment polygons
     gdf_nhru02_path = './data/drb_prms_basins_fixed_from_nhru02/drb_prms_basins_fixed_from_nhru02.shp'
+    gdf_nhru02_path = './data/nhru_02/nhru_02.shp'
     gdf = gpd.read_file(gdf_nhru02_path)
     ### date range
     start_date = '1979-01-01'
@@ -190,9 +189,11 @@ if __name__ =='__main__':
 
     xarray_dict = get_gridmet_datasets(variable = data_vars_shrt_all,
                                        start_date= start_date, end_date = end_date,
-                                       polygon_for_bbox = gdf)
+                                      # polygon_for_bbox = gdf,
+                                       lat_min=round(lat_min,2), lon_min=round(lon_min,2),
+                                       lat_max=round(lat_max,2), lon_max=round(lon_max,2))
 
-    create_weightmap(xarray_dict = xarray_dict,
+    weight_map_path = create_weightmap(xarray_dict = xarray_dict,
                      polygon=gdf,
                      output_data_folder = output_path,
                      weightmap_var = 'tmmx')
@@ -201,7 +202,7 @@ if __name__ =='__main__':
     g2shp_regridding(xarray_dict= subset,
                      polygon=gdf,
                      weightmap_file= './data/grd2shp_weights_tmmx.pickle',
-                     g2s_file_prefix='t_',
+                     g2s_file_prefix='ttt_',
                      output_data_folder= output_path)
 
 ######### Plot ##########
