@@ -32,7 +32,7 @@ def get_gridmet_datasets(variable, start_date, end_date, polygon_as_bbox = None,
     :param str start_date: Start date of data collection yyyy-mm-dd
     :param str end_date: End date of data collection yyyy-mm-dd
     :param gdf.total_bounds polygon_bbox: total bounds of a geodataframe. Ex: geodataframe.total_bounds. If not known, None
-    :param str lon_min: bbox of aoi longitude min. None if polygon_bbox is given (i.e. polygon_bbox != None)
+    :param str lon_min: bbox of aoi longitude min. Not used if polygon_bbox is given (i.e. polygon_bbox != None)
     :param str lat_min: bbox of aoi latitude min. None if polygon_bbox is given (i.e. polygon_bbox != None)
     :param str lon_max: bbox of aoi longitude max. None if polygon_bbox is given (i.e. polygon_bbox != None)
     :param str lat_max: bbox of aoi latitude max. None if polygon_bbox is given (i.e. polygon_bbox != None)
