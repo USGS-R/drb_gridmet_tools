@@ -18,7 +18,7 @@ gdf_nhru02_path = './data/nhru_02/nhru_02.shp'
 gdf = gpd.read_file(gdf_nhru02_path)
 ## date range
 start_date = '1979-01-01'
-end_date = '2021-01-01'
+end_date = '1985-01-01'
 ## lat lon
 lon_min, lat_min, lon_max, lat_max = gdf.total_bounds
 ## output folder
@@ -31,7 +31,7 @@ def get_gridmet_datasets(variable, start_date, end_date, polygon_as_bbox = None,
     :param str/list var_short: data variable short name or list of data variable short names. Must be one of the following: ['tmmx', 'tmmn', 'pr', 'srad', 'vs', 'rmax', 'rmin', 'sph']
     :param str start_date: Start date of data collection yyyy-mm-dd
     :param str end_date: End date of data collection yyyy-mm-dd
-    :param gdf.total_bounds polygon_bbox: total bounds of a geodataframe. Ex: geodataframe.total_bounds. If not known, None
+    :param gdf.total_bounds polygon_as_bbox: total bounds of a geodataframe. Ex: geodataframe.total_bounds. If not known, None
     :param str lon_min: bbox of aoi longitude min. None if polygon_bbox is given (i.e. polygon_bbox != None)
     :param str lat_min: bbox of aoi latitude min. None if polygon_bbox is given (i.e. polygon_bbox != None)
     :param str lon_max: bbox of aoi longitude max. None if polygon_bbox is given (i.e. polygon_bbox != None)
@@ -129,7 +129,7 @@ def create_weightmap(xarray_dict, polygon, output_data_folder, weightmap_var = N
     return weightmap_file
 
 
-def g2shp_regridding(xarray_dict, weightmap_file, output_data_folder, g2s_file_prefix, g2s_time_var = 'day', g2s_lat_var = 'lat' , g2s_lon_var = 'lon'):
+def g2shp_regridding(xarray_dict, polygon, weightmap_file, output_data_folder, g2s_file_prefix, g2s_time_var = 'day', g2s_lat_var = 'lat', g2s_lon_var = 'lon'):
 
     """
     :param dict xarray_dict: dictionary of gridmet data. the output of get_gridmet_datasets()
@@ -161,8 +161,8 @@ def g2shp_regridding(xarray_dict, weightmap_file, output_data_folder, g2s_file_p
     g2s = grd2shp_xagg.Grd2ShpXagg()
     g2s.initialize(
         grd = vars_grd_list,
-        shp = gdf,
-        wght_file = weightmap_file,
+        shp= polygon,
+        wght_file= weightmap_file,
         time_var = g2s_time_var,
         lat_var = g2s_lat_var,
         lon_var = g2s_lon_var,
@@ -191,26 +191,28 @@ def g2shp_regridding(xarray_dict, weightmap_file, output_data_folder, g2s_file_p
 ####### Run function code #########
 
 xarray_dict = get_gridmet_datasets(variable = data_vars_shrt_all,
-                                   start_date = start_date, end_date = end_date,
+                                   start_date= start_date, end_date = end_date,
                                    polygon_as_bbox = gdf)
-#                    lon_min = -80, lat_min = 36, lon_max = -71, lat_max = 45
+#                                   lon_min = lon_min, lat_min = lat_min, lon_max = lon_max, lat_max = lat_max
 
-create_weightmap(polygon = gdf,
-                 xarray_dict = xarray_dict,
+
+create_weightmap(xarray_dict = xarray_dict,
+                 polygon=gdf,
                  output_data_folder = output_path,
                  weightmap_var = 'tmmx')
 
 
-g2shp_regridding(xarray_dict = xarray_dict,
-                 weightmap_file = './data/grd2shp_weights_tmmx.pickle',
-                 g2s_file_prefix ='dps_',
-                 output_data_folder = output_path)
+g2shp_regridding(xarray_dict= subset,
+                 polygon=gdf,
+                 weightmap_file= './data/grd2shp_weights_tmmx.pickle',
+                 g2s_file_prefix='dps_',
+                 output_data_folder= output_path)
 
 
 ######### Other ##########
 
 ## subset of dict for testing
-# subset = {key: xarray_dict[key] for key in ['pr']}
+subset = {key: xarray_dict[key] for key in ['pr','tmmx']}
 
 ## Viewing output
 #xr_mapped = xr.open_dataset('./data/all_climate_2022_01_25.nc', decode_times=False)

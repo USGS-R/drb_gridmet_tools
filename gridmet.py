@@ -1,9 +1,7 @@
 # Libraries
-import pandas as pd
+import os
 import pickle
 import time
-import hvplot.pandas
-import hvplot.xarray
 import geopandas as gpd
 import grd2shp_xagg
 import xagg as xa
@@ -11,12 +9,14 @@ import xarray as xr
 
 # Variables
 gdf_nhru02_path = './data/nhru_02/nhru_02.shp'
+gdf = gpd.read_file(gdf_nhru02_path)
+print(gdf.total_bounds)
 start_date = '1979-01-01'
 end_date = '2021-01-01'
-lon_min = -79
-lon_max = -67
+lon_min = -80
+lon_max = -71
 lat_min = 36
-lat_max = 42
+lat_max = 45
 output_path = './data/'
 
 ## official list of variables needed for drb-inland-salinity model
@@ -136,8 +136,8 @@ def g2shp_regridding(polygon_file_path,
     print(type(g2s))
     g2s.write_gm_file(opath=output_data_folder, prefix= g2s_file_prefix)
 
-    return g2s
 
+    return g2s
 
 g2shp_regridding(polygon_file_path = gdf_nhru02_path,
                 var_short = data_vars_shrt_all,
