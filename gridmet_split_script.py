@@ -41,9 +41,7 @@ def get_gridmet_datasets(variable, start_date, end_date, polygon_for_bbox = None
             polygon_for_bbox = polygon_for_bbox.to_crs('EPSG:4326')
             print('geodataframe crs changed to EPSG:4326')
 
-        lon_min, lat_min, lon_max, lat_max = polygon_for_bbox.total_bounds
-    else:
-        pass
+        lon_min, lat_min, lon_max, lat_max = polygon_as_bbox.total_bounds
 
     ## if only 1 var (short) is provided, change to list
     if not isinstance(variable, list):
