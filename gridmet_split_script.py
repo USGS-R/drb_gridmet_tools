@@ -81,7 +81,7 @@ def get_gridmet_datasets(variable, start_date, end_date, polygon_as_bbox = None,
                            lon = slice(lon_min, lon_max),
                            lat = slice(lat_max, lat_min))
         end = time.perf_counter()
-        print(f'finish in {round(start - end, 2)} seconds')
+        print(f'finish in {round(end - start, 2)} seconds')
 
         # Append to dict of xr.datasets
         xarray_dict[var] = ds_subset
