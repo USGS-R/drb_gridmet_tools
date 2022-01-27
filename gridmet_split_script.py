@@ -9,54 +9,39 @@ import xarray as xr
 import os
 import datetime
 
-# Variables
-
-## official list of variables needed for drb-inland-salinity model
-data_vars_shrt_all = ['tmmx', 'tmmn', 'pr', 'srad', 'vs','rmax','rmin','sph']
-## drb catchment polygons
-gdf_nhru02_path = './data/nhru_02/nhru_02.shp'
-gdf = gpd.read_file(gdf_nhru02_path)
-## date range
-start_date = '1979-01-01'
-end_date = '1985-01-01'
-## lat lon
-lon_min, lat_min, lon_max, lat_max = gdf.total_bounds
-## output folder
-output_path = './data/'
-
-
-def get_gridmet_datasets(variable, start_date, end_date, polygon_as_bbox = None, lon_min = None, lat_min = None, lon_max = None, lat_max = None):
+# Function definitions
+def get_gridmet_datasets(variable, start_date, end_date, polygon_for_bbox = None, lon_min = None, lat_min = None, lon_max = None, lat_max = None):
 
     """
-    :param str/list var_short: data variable short name or list of data variable short names. Must be one of the following: ['tmmx', 'tmmn', 'pr', 'srad', 'vs', 'rmax', 'rmin', 'sph']
+    :param str/list variable: data variable short name or list of data variable short names. Must be one of the following: ['tmmx', 'tmmn', 'pr', 'srad', 'vs', 'rmax', 'rmin', 'sph']
     :param str start_date: Start date of data collection yyyy-mm-dd
     :param str end_date: End date of data collection yyyy-mm-dd
-    :param gdf.total_bounds polygon_as_bbox: total bounds of a geodataframe. Ex: geodataframe.total_bounds. If not known, None
-    :param str lon_min: bbox of aoi longitude min. None if polygon_bbox is given (i.e. polygon_bbox != None)
-    :param str lat_min: bbox of aoi latitude min. None if polygon_bbox is given (i.e. polygon_bbox != None)
-    :param str lon_max: bbox of aoi longitude max. None if polygon_bbox is given (i.e. polygon_bbox != None)
-    :param str lat_max: bbox of aoi latitude max. None if polygon_bbox is given (i.e. polygon_bbox != None)
+    :param gdf.total_bounds polygon_for_bbox: total bounds of a geodataframe. Ex: geodataframe.total_bounds. If not known, None
+    :param str lon_min: bbox of aoi longitude min. None if polygon_for_bbox is given (i.e. polygon_bbox != None)
+    :param str lat_min: bbox of aoi latitude min. None if polygon_for_bbox is given (i.e. polygon_bbox != None)
+    :param str lon_max: bbox of aoi longitude max. None if polygon_for_bbox is given (i.e. polygon_bbox != None)
+    :param str lat_max: bbox of aoi latitude max. None if polygon_for_bbox is given (i.e. polygon_bbox != None)
     :return: dictionary of xarray stored by variable name
     """
 
     ## check/define bounds for data slicing
-    if polygon_as_bbox is not None:
-        if isinstance(polygon_as_bbox, geopandas.geodataframe.GeoDataFrame):
+    if polygon_for_bbox is not None:
+        if isinstance(polygon_for_bbox, geopandas.geodataframe.GeoDataFrame):
             print('polygon is geodataframe')
-            print(polygon_as_bbox.total_bounds)
+            print(polygon_for_bbox.total_bounds)
             pass
-        elif os.path.isfile(polygon_as_bbox):
+        elif os.path.isfile(polygon_for_bbox):
             print('polygon is path to shapefile')
-            polygon_as_bbox = gpd.read_file(polygon_as_bbox)
-            print(polygon_as_bbox.total_bounds)
+            polygon_for_bbox = gpd.read_file(polygon_for_bbox)
+            print(polygon_for_bbox.total_bounds)
         else:
-             raise TypeError('polygon_as_bbox should str path to shapefile or geodataframe')
+             raise TypeError('polygon_for_bbox should str path to shapefile or geodataframe')
 
-        if polygon_as_bbox.crs != 'EPSG:4326':
-            polygon_as_bbox = polygon_as_bbox.to_crs('EPSG:4326')
+        if polygon_for_bbox.crs != 'EPSG:4326':
+            polygon_for_bbox = polygon_for_bbox.to_crs('EPSG:4326')
             print('geodataframe crs changed to EPSG:4326')
 
-        lon_min, lat_min, lon_max, lat_max = polygon_as_bbox.total_bounds
+        lon_min, lat_min, lon_max, lat_max = polygon_for_bbox.total_bounds
     else:
         pass
 
@@ -103,7 +88,7 @@ def create_weightmap(xarray_dict, polygon, output_data_folder, weightmap_var = N
         pass
     elif os.path.isfile(polygon):
         print('polygon is path to shapefile')
-        polygon = gpd.read_file(polygon_as_bbox)
+        polygon = gpd.read_file(polygon)
     else:
         raise TypeError('polygon should str path to shapefile or geodataframe')
 
@@ -144,10 +129,7 @@ def g2shp_regridding(xarray_dict, polygon, weightmap_file, output_data_folder, g
 
     ## params for g2s.initialise()
     # grab long name of data vars from dict and place in list
-    vars_long_list = []
-    for key in xarray_dict:
-        vars_long_list = vars_long_list + list(xarray_dict[key])
-
+    vars_long_list = [list(xarray_dict[key])[0] for key in xarray_dict]
     # List of short names of data vars from dict keys
     vars_short_list = list(xarray_dict.keys())
     # Lsit of xarray.datasets
@@ -188,31 +170,45 @@ def g2shp_regridding(xarray_dict, polygon, weightmap_file, output_data_folder, g
 
     return g2s
 
-####### Run function code #########
+# Variables and run functions
+if __name__ =='__main__':
 
-xarray_dict = get_gridmet_datasets(variable = data_vars_shrt_all,
-                                   start_date= start_date, end_date = end_date,
-                                   polygon_as_bbox = gdf)
-#                                   lon_min = lon_min, lat_min = lat_min, lon_max = lon_max, lat_max = lat_max
+    ## Variable definitions
+    ### official list of variables needed for drb-inland-salinity model
+    data_vars_shrt_all = ['tmmx', 'tmmn', 'pr', 'srad', 'vs','rmax','rmin','sph']
+    ### drb catchment polygons
+    gdf_nhru02_path = './data/drb_prms_basins_fixed_from_nhru02/drb_prms_basins_fixed_from_nhru02.shp'
+    gdf = gpd.read_file(gdf_nhru02_path)
+    ### date range
+    start_date = '1979-01-01'
+    end_date = '1985-01-01'
+    ### lat lon
+    lon_min, lat_min, lon_max, lat_max = gdf.total_bounds
+    ### output folder
+    output_path = './data/'
+    ### subset for testing
+    subset = {key: xarray_dict[key] for key in ['tmmx', 'pr']}
 
 
-create_weightmap(xarray_dict = xarray_dict,
-                 polygon=gdf,
-                 output_data_folder = output_path,
-                 weightmap_var = 'tmmx')
+    xarray_dict = get_gridmet_datasets(variable = data_vars_shrt_all,
+                                       start_date= start_date, end_date = end_date,
+                                       polygon_for_bbox = gdf)
+
+    create_weightmap(xarray_dict = xarray_dict,
+                     polygon=gdf,
+                     output_data_folder = output_path,
+                     weightmap_var = 'tmmx')
 
 
-g2shp_regridding(xarray_dict= subset,
-                 polygon=gdf,
-                 weightmap_file= './data/grd2shp_weights_tmmx.pickle',
-                 g2s_file_prefix='dps_',
-                 output_data_folder= output_path)
+    g2shp_regridding(xarray_dict= subset,
+                     polygon=gdf,
+                     weightmap_file= './data/grd2shp_weights_tmmx.pickle',
+                     g2s_file_prefix='t_',
+                     output_data_folder= output_path)
 
-
-######### Other ##########
+######### Plot ##########
 
 ## subset of dict for testing
-subset = {key: xarray_dict[key] for key in ['pr','tmmx']}
 
 ## Viewing output
 #xr_mapped = xr.open_dataset('./data/all_climate_2022_01_25.nc', decode_times=False)
