@@ -41,7 +41,7 @@ def get_gridmet_datasets(variable, start_date, end_date, polygon_for_bbox = None
             polygon_for_bbox = polygon_for_bbox.to_crs('EPSG:4326')
             print('geodataframe crs changed to EPSG:4326')
 
-        lon_min, lat_min, lon_max, lat_max = polygon_as_bbox.total_bounds
+        lon_min, lat_min, lon_max, lat_max = polygon_for_bbox.total_bounds
 
     ## if only 1 var (short) is provided, change to list
     if not isinstance(variable, list):
@@ -174,24 +174,24 @@ if __name__ =='__main__':
     data_vars_shrt_all = ['tmmx', 'tmmn', 'pr', 'srad', 'vs','rmax','rmin','sph']
     ### drb catchment polygons
     gdf_nhru02_path = './data/drb_prms_basins_fixed_from_nhru02/drb_prms_basins_fixed_from_nhru02.shp'
-    gdf_nhru02_path = './data/nhru_02/nhru_02.shp'
+#    gdf_nhru02_path = './data/nhru_02/nhru_02.shp'
     gdf = gpd.read_file(gdf_nhru02_path)
     ### date range
     start_date = '1979-01-01'
-    end_date = '1985-01-01'
+    end_date = '2021-01-01'
     ### lat lon
     lon_min, lat_min, lon_max, lat_max = gdf.total_bounds
     ### output folder
     output_path = './data/'
-    ### subset for testing
-    subset = {key: xarray_dict[key] for key in ['tmmx', 'pr']}
-
 
     xarray_dict = get_gridmet_datasets(variable = data_vars_shrt_all,
                                        start_date= start_date, end_date = end_date,
-                                      # polygon_for_bbox = gdf,
-                                       lat_min=round(lat_min,2), lon_min=round(lon_min,2),
-                                       lat_max=round(lat_max,2), lon_max=round(lon_max,2))
+                                       polygon_for_bbox = gdf)
+                                      # lat_min=round(lat_min,2), lon_min=round(lon_min,2),
+                                      # lat_max=round(lat_max,2), lon_max=round(lon_max,2))
+    
+    ### Subset for streamlined testing 
+    subset = {key: xarray_dict[key] for key in ['tmmx','pr']}
 
     weight_map_path = create_weightmap(xarray_dict = xarray_dict,
                      polygon=gdf,
