@@ -201,13 +201,3 @@ if __name__ =='__main__':
                      g2s_time_var = 'day',
                      g2s_lat_var = 'lat',
                      g2s_lon_var = 'lon')
-
-
-######### Plot ##########
-
-## Viewing output
-#xr_mapped = xr.open_dataset('./data/all_climate_2022_01_25.nc', decode_times=False)
-#gdf["tmmn"] = xr_mapped["tmmn"][:,0]
-# gdf.plot(column = 'tmmn', legend = True)
-# xr_mapped.isel(geomid=3).tmmn.plot()
-
