@@ -13,7 +13,7 @@ import datetime
 def get_gridmet_datasets(variable, start_date, end_date, polygon_for_bbox = None, lon_min = None, lat_min = None, lon_max = None, lat_max = None):
 
     """
-    :param str/list variable: data variable short name or list of data variable short names. Must be one of the following: ['tmmx', 'tmmn', 'pr', 'srad', 'vs', 'rmax', 'rmin', 'sph']
+    :param str/list variable: data variable short name or list of data variables in short name. Must be one of the following: ['tmmx', 'tmmn', 'pr', 'srad', 'vs', 'rmax', 'rmin', 'sph']
     :param str start_date: Start date of data collection yyyy-mm-dd
     :param str end_date: End date of data collection yyyy-mm-dd
     :param gdf.total_bounds polygon_for_bbox: total bounds of a geodataframe. Ex: geodataframe.total_bounds. If not known, None
@@ -94,10 +94,9 @@ def create_weightmap(xarray_dict, polygon, output_data_folder, weightmap_var = N
         # If non var given
         weightmap_file = os.path.join(output_data_folder, 'grd2shp_weights.pickle')
         weightmap_var = list(xarray_dict.keys())[0]
-        print(weightmap_file, weightmap_var)
-    else:
+     else:
         weightmap_file = os.path.join(output_data_folder, f'grd2shp_weights_{weightmap_var}.pickle')
-        print(weightmap_file)
+
 
     ## Produce weightmap
     start = time.perf_counter()
@@ -110,7 +109,8 @@ def create_weightmap(xarray_dict, polygon, output_data_folder, weightmap_var = N
 
     return weightmap_file
 
-def g2shp_regridding(xarray_dict, polygon, weightmap_file, output_data_folder, g2s_file_prefix, g2s_time_var = 'day', g2s_lat_var = 'lat', g2s_lon_var = 'lon'):
+def g2shp_regridding(xarray_dict, polygon, weightmap_file, output_data_folder, g2s_file_prefix,
+                     g2s_time_var = 'day', g2s_lat_var = 'lat', g2s_lon_var = 'lon'):
 
     """
     :param dict xarray_dict: dictionary of gridmet data. the output of get_gridmet_datasets()
@@ -130,10 +130,6 @@ def g2shp_regridding(xarray_dict, polygon, weightmap_file, output_data_folder, g
     vars_short_list = list(xarray_dict.keys())
     # Lsit of xarray.datasets
     vars_grd_list = list(xarray_dict.values())
-
-    print(vars_long_list)
-    print(vars_short_list)
-    print(vars_grd_list)
 
     ## initialize Grd2ShpXagg()
     g2s = grd2shp_xagg.Grd2ShpXagg()
@@ -173,7 +169,7 @@ if __name__ =='__main__':
     ### official list of variables needed for drb-inland-salinity model
     data_vars_shrt_all = ['tmmx', 'tmmn', 'pr', 'srad', 'vs','rmax','rmin','sph']
     ### drb catchment polygons
-    gdf_nhru02_path = './data/drb_prms_basins_fixed_from_nhru02/drb_prms_basins_fixed_from_nhru02.shp'
+    gdf_nhru02_path = './data/nhru_01/nhru_01.shp'
 #    gdf_nhru02_path = './data/nhru_02/nhru_02.shp'
     gdf = gpd.read_file(gdf_nhru02_path)
     ### date range
@@ -191,7 +187,7 @@ if __name__ =='__main__':
                                       # lat_max=round(lat_max,2), lon_max=round(lon_max,2))
     
     ### Subset for streamlined testing 
-    subset = {key: xarray_dict[key] for key in ['tmmx','pr']}
+    subset = {key: xarray_dict[key] for key in ['tmmx']}
 
     weight_map_path = create_weightmap(xarray_dict = xarray_dict,
                      polygon=gdf,
@@ -201,16 +197,19 @@ if __name__ =='__main__':
 
     g2shp_regridding(xarray_dict= subset,
                      polygon=gdf,
-                     weightmap_file= './data/grd2shp_weights_tmmx.pickle',
-                     g2s_file_prefix='ttt_',
-                     output_data_folder= output_path)
+                     weightmap_file= weight_map_path,
+                     g2s_file_prefix='t_',
+                     output_data_folder= output_path,
+                     g2s_time_var = 'day',
+                     g2s_lat_var = 'lat',
+                     g2s_lon_var = 'lon')
+
 
 ######### Plot ##########
-
-## subset of dict for testing
 
 ## Viewing output
 #xr_mapped = xr.open_dataset('./data/all_climate_2022_01_25.nc', decode_times=False)
 #gdf["tmmn"] = xr_mapped["tmmn"][:,0]
 # gdf.plot(column = 'tmmn', legend = True)
 # xr_mapped.isel(geomid=3).tmmn.plot()
+
