@@ -16,11 +16,11 @@ def get_gridmet_datasets(variable, start_date, end_date, polygon_for_bbox = None
     :param str/list variable: data variable short name or list of data variables in short name. Must be one of the following: ['tmmx', 'tmmn', 'pr', 'srad', 'vs', 'rmax', 'rmin', 'sph']
     :param str start_date: Start date of data collection yyyy-mm-dd
     :param str end_date: End date of data collection yyyy-mm-dd
-    :param gdf.total_bounds polygon_for_bbox: total bounds of a geodataframe. Ex: geodataframe.total_bounds. If not known, None
-    :param str lon_min: bbox of aoi longitude min. None if polygon_for_bbox is given (i.e. polygon_bbox != None)
-    :param str lat_min: bbox of aoi latitude min. None if polygon_for_bbox is given (i.e. polygon_bbox != None)
-    :param str lon_max: bbox of aoi longitude max. None if polygon_for_bbox is given (i.e. polygon_bbox != None)
-    :param str lat_max: bbox of aoi latitude max. None if polygon_for_bbox is given (i.e. polygon_bbox != None)
+    :param gpd.GeoDataFrame or str polygon_bbox: either a geodataframe of the polygons you are aggregating to or a path to a shapefile (or other geo file) that can be read into a geodataframe
+    :param str lon_min: bbox of aoi longitude min. Not used if polygon_for_bbox is given (i.e. polygon_bbox != None)
+    :param str lat_min: bbox of aoi latitude min. Not used if polygon_for_bbox is given (i.e. polygon_bbox != None)
+    :param str lon_max: bbox of aoi longitude max. Not used if polygon_for_bbox is given (i.e. polygon_bbox != None)
+    :param str lat_max: bbox of aoi latitude max. Not used if polygon_for_bbox is given (i.e. polygon_bbox != None)
     :return: dictionary of xarray stored by variable name
     """
 
@@ -74,10 +74,10 @@ def get_gridmet_datasets(variable, start_date, end_date, polygon_for_bbox = None
 def create_weightmap(xarray_dict, polygon, output_data_folder, weightmap_var = None):
 
     """
-    :param geodataframe polygon: geodataframe polygon or multipolygon
     :param dict xarray_dict: dictionary of gridmet data. the output of get_gridmet_datasets()
+    :param gpd.GeoDataFrame polygon: geodataframe polygon or multipolygon that is used for regridding
     :param str output_data_folder: path to folder for function output
-    :param str weightmap_var: variable used to make weightfile + naming of output e.i. weightmap_var = 'tmin'. If none, first variable of dict keys will be used.
+    :param str weightmap_var: variable used to make weightfile + naming output e.i. weightmap_var = 'tmin'. If none, first var of dict  will be used.
     :return: output path to weightmap pickle file
     """
     if isinstance(polygon, geopandas.geodataframe.GeoDataFrame):
@@ -114,13 +114,13 @@ def g2shp_regridding(xarray_dict, polygon, weightmap_file, output_data_folder, g
 
     """
     :param dict xarray_dict: dictionary of gridmet data. the output of get_gridmet_datasets()
-    :paran str weightmap_file: path to weight file for redridding
+    :param gpd.GeoDataFrame polygon: geodataframe polygon or multipolygon that is used for regriddin
+    :paran str weightmap_file: path to weight file for redridding. Output of create_weightmap()
     :param str output_data_folder: path to folder for function output
-    :param str weightmap_var: if len(xarray_dict) selected
     :param str g2s_time_var: time variable for g2shp initialization (i.e.g2s_time_var = 'day')
     :param str g2s_lat_var: latitude variable for g2shp initialization (i.e.g2s_time_var = 'lat')
     :param str g2s_lon_var: time variable for g2shp initialization (i.e.g2s_time_var = 'lon')
-    :return:
+    :return: regriddied g2s object, which is saved as .nc to output_data_folder
     """
 
     ## params for g2s.initialise()
@@ -169,8 +169,7 @@ if __name__ =='__main__':
     ### official list of variables needed for drb-inland-salinity model
     data_vars_shrt_all = ['tmmx', 'tmmn', 'pr', 'srad', 'vs','rmax','rmin','sph']
     ### drb catchment polygons
-    gdf_nhru02_path = './data/nhru_01/nhru_01.shp'
-#    gdf_nhru02_path = './data/nhru_02/nhru_02.shp'
+    gdf_nhru02_path = './data/nhru_02/nhru_02.shp'
     gdf = gpd.read_file(gdf_nhru02_path)
     ### date range
     start_date = '1979-01-01'
@@ -185,17 +184,16 @@ if __name__ =='__main__':
                                        polygon_for_bbox = gdf)
                                       # lat_min=round(lat_min,2), lon_min=round(lon_min,2),
                                       # lat_max=round(lat_max,2), lon_max=round(lon_max,2))
-    
-    ### Subset for streamlined testing 
-    subset = {key: xarray_dict[key] for key in ['tmmx']}
 
     weight_map_path = create_weightmap(xarray_dict = xarray_dict,
                      polygon=gdf,
                      output_data_folder = output_path,
                      weightmap_var = 'tmmx')
 
+    ### Subset for streamlined testing
+    subset = {key: xarray_dict[key] for key in ['tmmx']}
 
-    g2shp_regridding(xarray_dict= subset,
+    g2shp_regridding(xarray_dict= xarray_dict,
                      polygon=gdf,
                      weightmap_file= weight_map_path,
                      g2s_file_prefix='t_',
