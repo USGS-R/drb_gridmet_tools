@@ -16,7 +16,7 @@ def get_gridmet_datasets(variable, start_date, end_date, polygon_for_bbox = None
     :param str/list variable: data variable short name or list of data variables in short name. Must be one of the following: ['tmmx', 'tmmn', 'pr', 'srad', 'vs', 'rmax', 'rmin', 'sph']
     :param str start_date: Start date of data collection yyyy-mm-dd
     :param str end_date: End date of data collection yyyy-mm-dd
-    :param gpd.GeoDataFrame or str polygon_bbox: either a geodataframe of the polygons you are aggregating to or a path to a shapefile (or other geo file) that can be read into a geodataframe
+    :param gpd.GeoDataFrame or str polygon_for_bbox: either a geodataframe of the polygons you are aggregating to or a path to a shapefile (or other geo file) that can be read into a geodataframe
     :param str lon_min: bbox of aoi longitude min. Not used if polygon_for_bbox is given (i.e. polygon_bbox != None)
     :param str lat_min: bbox of aoi latitude min. Not used if polygon_for_bbox is given (i.e. polygon_bbox != None)
     :param str lon_max: bbox of aoi longitude max. Not used if polygon_for_bbox is given (i.e. polygon_bbox != None)
@@ -91,7 +91,7 @@ def create_weightmap(xarray_dict, polygon, output_data_folder, weightmap_var = N
 
     ## Name output weightmap_file
     if weightmap_var is None:
-        # If non var given
+        # If no var is specified, first var of xarray_dict will be used for generating weight file, and name of output will be generic: 'grd2shp_weights.pickle'
         weightmap_file = os.path.join(output_data_folder, 'grd2shp_weights.pickle')
         weightmap_var = list(xarray_dict.keys())[0]
      else:
@@ -114,7 +114,7 @@ def g2shp_regridding(xarray_dict, polygon, weightmap_file, output_data_folder, g
 
     """
     :param dict xarray_dict: dictionary of gridmet data. the output of get_gridmet_datasets()
-    :param gpd.GeoDataFrame polygon: geodataframe polygon or multipolygon that is used for regriddin
+    :param gpd.GeoDataFrame polygon: geodataframe polygon or multipolygon that is used for regridding
     :paran str weightmap_file: path to weight file for redridding. Output of create_weightmap()
     :param str output_data_folder: path to folder for function output
     :param str g2s_time_var: time variable for g2shp initialization (i.e.g2s_time_var = 'day')
@@ -145,17 +145,17 @@ def g2shp_regridding(xarray_dict, polygon, weightmap_file, output_data_folder, g
         ctype=0,
     )
 
-    # Regridding
+    # Run regridding
     start = time.perf_counter()
     g2s.run_weights()
     end = time.perf_counter()
     print('finished agg in {} second(s)'.format(round(end - start, 2)))
     print(g2s)
 
-    ## output
+    ## Saving output
     g2s.write_gm_file(opath=output_data_folder, prefix=g2s_file_prefix)
 
-    ## Print location of output
+    ## Printing location of output
     todays_date = str(datetime.datetime.now().strftime("%Y_%m_%d"))
     file_name = g2s_file_prefix + "climate_" + todays_date + ".nc"
     print('netcdf4 file path: ' + os.path.join(output_data_folder, file_name))
