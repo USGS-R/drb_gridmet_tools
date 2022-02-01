@@ -3,11 +3,10 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python>=3.8
+  - python>=3.9.*
   - pip
   - click
   - pygeoapi
-  - xagg
   - pandas
   - geopandas
   - rasterstats
@@ -31,6 +30,7 @@ dependencies:
   - bottleneck
   - numba
   - pip:
+    - git+https://github.com/rmcd-mscb/xagg.git@nc_prep_fix
     - git+https://github.com/rmcd-mscb/grd2shp_xagg.git@main
     - datetime
 
