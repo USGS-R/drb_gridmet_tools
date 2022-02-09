@@ -94,7 +94,7 @@ def create_weightmap(xarray_dict, polygon, output_data_folder, weightmap_var = N
         # If no var is specified, first var of xarray_dict will be used for generating weight file, and name of output will be generic: 'grd2shp_weights.pickle'
         weightmap_file = os.path.join(output_data_folder, 'grd2shp_weights.pickle')
         weightmap_var = list(xarray_dict.keys())[0]
-     else:
+    else:
         weightmap_file = os.path.join(output_data_folder, f'grd2shp_weights_{weightmap_var}.pickle')
 
 
