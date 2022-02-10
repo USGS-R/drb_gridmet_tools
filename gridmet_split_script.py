@@ -14,8 +14,8 @@ def get_gridmet_datasets(variable, start_date, end_date, polygon_for_bbox = None
 
     """
     :param str/list variable: data variable short name or list of data variables in short name. Must be one of the following: ['tmmx', 'tmmn', 'pr', 'srad', 'vs', 'rmax', 'rmin', 'sph']
-    :param str start_date: Start date of data collection yyyy-mm-dd
-    :param str end_date: End date of data collection yyyy-mm-dd
+    :param str start_date: Start date of gridMET data yyyy-mm-dd
+    :param str end_date: End date of gridMET data yyyy-mm-dd
     :param gpd.GeoDataFrame or str polygon_for_bbox: either a geodataframe of the polygons you are aggregating to or a path to a shapefile (or other geo file) that can be read into a geodataframe
     :param str lon_min: bbox of aoi longitude min. Not used if polygon_for_bbox is given (i.e. polygon_bbox != None)
     :param str lat_min: bbox of aoi latitude min. Not used if polygon_for_bbox is given (i.e. polygon_bbox != None)
@@ -87,7 +87,7 @@ def create_weightmap(xarray_dict, polygon, output_data_folder, weightmap_var = N
         print('polygon is path to shapefile')
         polygon = gpd.read_file(polygon)
     else:
-        raise TypeError('polygon should str path to shapefile or geodataframe')
+        raise TypeError('polygon should be str path to shapefile or geodataframe')
 
     ## Name output weightmap_file
     if weightmap_var is None:
@@ -168,9 +168,10 @@ if __name__ =='__main__':
     ## Variable definitions
     ### official list of variables needed for drb-inland-salinity model
     data_vars_shrt_all = ['tmmx', 'tmmn', 'pr', 'srad', 'vs','rmax','rmin','sph']
-    ### drb catchment polygons
+    ### Catchment polygons
     gdf_nhru02_path = './data/nhru_02/nhru_02.shp'
-    gdf = gpd.read_file(gdf_nhru02_path)
+    gdf_prms_path = './data/PRMS_catchments/prms_catchments_4326.shp'
+    gdf = gpd.read_file(gdf_prms_path)
     ### date range
     start_date = '1979-01-01'
     end_date = '2021-01-01'
@@ -191,7 +192,7 @@ if __name__ =='__main__':
                      weightmap_var = 'tmmx')
 
     ### Subset for streamlined testing
-    subset = {key: xarray_dict[key] for key in ['tmmx']}
+    # subset = {key: xarray_dict[key] for key in ['tmmx']}
 
     g2shp_regridding(xarray_dict= xarray_dict,
                      polygon=gdf,
