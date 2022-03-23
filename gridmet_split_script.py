@@ -2,7 +2,6 @@
 import pickle
 import time
 import geopandas as gpd
-import geopandas.geodataframe
 import grd2shp_xagg
 import xagg as xa
 import xarray as xr
@@ -26,7 +25,7 @@ def get_gridmet_datasets(variable, start_date, end_date, polygon_for_bbox = None
 
     ## check/define bounds for data slicing
     if polygon_for_bbox is not None:
-        if isinstance(polygon_for_bbox, geopandas.geodataframe.GeoDataFrame):
+        if isinstance(polygon_for_bbox, gpd.geodataframe.GeoDataFrame):
             print('polygon is geodataframe')
             print(polygon_for_bbox.total_bounds)
             pass
