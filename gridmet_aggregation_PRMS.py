@@ -75,7 +75,7 @@ def gridmet_prms_area_avg_agg(df, groupby_cols, val_colnames, wgt_col, output_pa
 
     end = time.perf_counter()
 
-    print('Time (sec) ellapsed:', end - start)
+    print('Time (sec) elapsed:', end - start)
 
     return df_final
 
