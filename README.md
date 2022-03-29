@@ -36,3 +36,8 @@ rmin:
 sph:
 * Description: Daily mean specific humidity (2m)
 * Units: kg/kg
+
+
+## Running re-gridding for the Delaware River Basin
+
+`gridmet_split_script.py` processes the gridmet raster dataset values to the scale of the input multi-polygon shapefile.
