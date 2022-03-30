@@ -25,7 +25,7 @@ def get_gridmet_datasets(variable, start_date, end_date, polygon_for_bbox = None
 
     ## check/define bounds for data slicing
     if polygon_for_bbox is not None:
-        if isinstance(polygon_for_bbox, gpd.geodataframe.GeoDataFrame):
+        if isinstance(polygon_for_bbox, gpd.GeoDataFrame):
             print('polygon is geodataframe')
             print(polygon_for_bbox.total_bounds)
             pass
