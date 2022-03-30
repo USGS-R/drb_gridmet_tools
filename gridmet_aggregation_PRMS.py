@@ -70,7 +70,7 @@ def gridmet_prms_area_avg_agg(df, groupby_cols, val_colnames, wgt_col, output_pa
     # remove interim col
     df_final = df_grouped.loc[:, ~(df_grouped.columns.str.contains('wgtd_sum'))]
 
-    if output_path is not None:
+    if output_path:
         df_final.to_csv(output_path, sep = ',')
         print('Output saved in: ' + output_path)
 
