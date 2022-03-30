@@ -175,7 +175,7 @@ if __name__ =='__main__':
     gdf = gpd.read_file(gdf_prms_path_edited, layer = 'GFv1_catchments_edited')
     ### date range
     start_date = '1979-01-01'
-    end_date = '2021-01-01'
+    end_date = '2022-01-01'
     ### lat lon
     lon_min, lat_min, lon_max, lat_max = gdf.total_bounds
     ### output folder
