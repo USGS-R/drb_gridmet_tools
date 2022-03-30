@@ -170,7 +170,6 @@ if __name__ =='__main__':
     ### Catchment polygons
     gdf_nhru02_path = './data/nhru_02/nhru_02.shp'
     gdf_prms_path_edited = './data/GFv1_catchments_edited.gpkg'
-    # gdf = gpd.read_file(gdf_prms_path)
     gdf = gpd.read_file(gdf_prms_path_edited, layer = 'GFv1_catchments_edited')
     ### date range
     start_date = '1979-01-01'
