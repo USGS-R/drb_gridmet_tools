@@ -169,7 +169,6 @@ if __name__ =='__main__':
     data_vars_shrt_all = ['tmmx', 'tmmn', 'pr', 'srad', 'vs','rmax','rmin','sph']
     ### Catchment polygons
     gdf_nhru02_path = './data/nhru_02/nhru_02.shp'
-    gdf_prms_path = './data/PRMS_catchments/prms_catchments_4326.shp'
     gdf_prms_path_edited = './data/GFv1_catchments_edited.gpkg'
     # gdf = gpd.read_file(gdf_prms_path)
     gdf = gpd.read_file(gdf_prms_path_edited, layer = 'GFv1_catchments_edited')
