@@ -22,7 +22,7 @@ srad:
 * Units: W m-2
       
 vs:
-* * Description: Daily Mean Wind Speed (10m) 
+* Description: Daily Mean Wind Speed (10m) 
 * Units: m/s
 
 rmax:
