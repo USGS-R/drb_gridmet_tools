@@ -49,26 +49,15 @@ def gridmet_prms_area_avg_agg(df, groupby_cols, val_colnames, wgt_col, output_pa
 
     df = df.copy()
     ## 1. Calc value x weight col
-    for col in val_colnames:
-           df[f'{col}_x_area'] = df[col]*df[wgt_col]
+    df.loc[:, val_colnames] = df[val_colnames].values * df[[wgt_col]].values
 
     ## 2. Create group by, by summing new value cols weighted by area
-    df_grouped = df.groupby(groupby_cols).agg(area_m2_sum = (wgt_col, 'sum'),
-                                              tmmx_wgtd_sum = ('tmmx_x_area', 'sum'),
-                                              tmmn_wgtd_sum = ('tmmn_x_area', 'sum'),
-                                              pr_wgtd_sum = ('pr_x_area', 'sum'),
-                                              srad_wgtd_sum = ('srad_x_area', 'sum'),
-                                              vs_wgtd_sum = ('vs_x_area', 'sum'),
-                                              rmax_wgtd_sum = ('rmax_x_area', 'sum'),
-                                              rmin_wgtd_sum = ('rmin_x_area', 'sum'),
-                                              sph_wgtd_sum = ('sph_x_area', 'sum')
-                                              )
-    ## 3. Get weighted average
-    for col in val_colnames:
-        df_grouped[f'{col}_wgtd_avg'] = df_grouped[f'{col}_wgtd_sum'] / df_grouped['area_m2_sum']
+    df_grouped = df.groupby(groupby_cols).sum()
 
-    # remove interim col
-    df_final = df_grouped.loc[:, ~(df_grouped.columns.str.contains('wgtd_sum'))]
+    ## 3. Get weighted average
+    df_grouped.loc[:, val_colnames] = df_grouped[val_colnames].values / df_grouped[[wgt_col]].values
+
+    df_final = df_grouped[val_colnames]
 
     if output_path:
         df_final.to_csv(output_path, sep = ',')
@@ -84,9 +73,9 @@ def gridmet_prms_area_avg_agg(df, groupby_cols, val_colnames, wgt_col, output_pa
 if __name__ =='__main__':
 
     ## Variable definitions
-    gdf_prms_path_edited = './data/GFv1_catchments_edited.gpkg'
-    gdf = gpd.read_file(gdf_prms_path_edited, layer = 'GFv1_catchments_edited')
-    gridmet_ncdf = './data/t_climate_2022_03_09.nc'
+    gdf_prms_path_edited = 'https://github.com/USGS-R/drb-network-prep/blob/940073e8d77c911b6fb9dc4e3657aeab1162a158/2_process/out/GFv1_catchments_edited.gpkg?raw=true'
+    gdf = gpd.read_file(gdf_prms_path_edited, layer='GFv1_catchments_edited')
+    gridmet_ncdf = './data/t_climate_2022_03_31.nc'
     data_vars_shrt_all = ['tmmx', 'tmmn', 'pr', 'srad', 'vs', 'rmax', 'rmin', 'sph']
 
     ## Create dataframe and merge with shapefile information

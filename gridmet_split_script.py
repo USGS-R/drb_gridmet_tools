@@ -79,7 +79,7 @@ def create_weightmap(xarray_dict, polygon, output_data_folder, weightmap_var = N
     :param str weightmap_var: variable used to make weightfile + naming output e.i. weightmap_var = 'tmin'. If none, first var of dict  will be used.
     :return: output path to weightmap pickle file
     """
-    if isinstance(polygon, geopandas.geodataframe.GeoDataFrame):
+    if isinstance(polygon, gpd.geodataframe.GeoDataFrame):
         print('polygon is geodataframe')
         pass
     elif os.path.isfile(polygon):
@@ -95,7 +95,6 @@ def create_weightmap(xarray_dict, polygon, output_data_folder, weightmap_var = N
         weightmap_var = list(xarray_dict.keys())[0]
     else:
         weightmap_file = os.path.join(output_data_folder, f'grd2shp_weights_{weightmap_var}.pickle')
-
 
     ## Produce weightmap
     start = time.perf_counter()
@@ -168,8 +167,7 @@ if __name__ =='__main__':
     ### official list of variables needed for drb-inland-salinity model
     data_vars_shrt_all = ['tmmx', 'tmmn', 'pr', 'srad', 'vs','rmax','rmin','sph']
     ### Catchment polygons
-    gdf_nhru02_path = './data/nhru_02/nhru_02.shp'
-    gdf_prms_path_edited = './data/GFv1_catchments_edited.gpkg'
+    gdf_prms_path_edited = 'https://github.com/USGS-R/drb-network-prep/blob/940073e8d77c911b6fb9dc4e3657aeab1162a158/2_process/out/GFv1_catchments_edited.gpkg?raw=true'
     gdf = gpd.read_file(gdf_prms_path_edited, layer = 'GFv1_catchments_edited')
     ### date range
     start_date = '1979-01-01'
@@ -188,7 +186,7 @@ if __name__ =='__main__':
     weight_map_path = create_weightmap(xarray_dict = xarray_dict,
                      polygon=gdf,
                      output_data_folder = output_path,
-                     weightmap_var = 'tmmx')
+                     weightmap_var = 'tmmn')
 
     ### Subset for streamlined testing
     # subset = {key: xarray_dict[key] for key in ['tmmx']}
