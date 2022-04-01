@@ -59,9 +59,16 @@ def gridmet_prms_area_avg_agg(df, groupby_cols, val_colnames, wgt_col, output_pa
 
     df_final = df_grouped[val_colnames]
 
-    if output_path:
+
+    if output_path.endswith('.csv'):
         df_final.to_csv(output_path, sep = ',')
         print('Output saved in: ' + output_path)
+
+    if output_path.endswith('.nc'):
+        df_final.to_xarray.to_netcdf(output_path)
+        print('Output saved in: ' + output_path)
+    else:
+        pass
 
     end = time.perf_counter()
 
