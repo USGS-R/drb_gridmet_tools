@@ -41,4 +41,5 @@ sph:
 ## Running re-gridding for the Delaware River Basin
 
 `gridmet_split_script.py` processes the gridmet raster dataset values to the scale of the input multi-polygon shapefile.
+
 `gridmet_aggregation_PRMS.py` processes the output of `gridmet_splot_script.py` and aggregates the PRMS_segid scale calculating an area weighted average. 
