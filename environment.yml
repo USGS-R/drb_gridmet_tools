@@ -1,9 +1,11 @@
-name: gridmet_tools_IS
+name: base
 channels:
   - conda-forge
   - defaults
+  - bioconda
 dependencies:
   - python>=3.9.*
+  - git
   - pip
   - click
   - pygeoapi
@@ -28,6 +30,7 @@ dependencies:
   - geoviews
   - rioxarray
   - bottleneck
+  - snakemake
   - numba
   - pip:
     - git+https://github.com/rmcd-mscb/xagg.git@nc_prep_fix

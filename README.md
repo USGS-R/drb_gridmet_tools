@@ -38,8 +38,22 @@ sph:
 * Units: kg/kg
 
 
-## Running re-gridding for the Delaware River Basin
-
+## running the code
 `gridmet_split_script.py` processes the gridmet raster dataset values to the scale of the input multi-polygon shapefile.
 
 `gridmet_aggregation_PRMS.py` processes the output of `gridmet_splot_script.py` and aggregates the PRMS_segid scale calculating an area weighted average. 
+
+The snakemake pipeline specified in `Snakefile` will call functions from the .py scripts to aggregate gridmet data to the polygons in the geo file specified. Currently, it's set up to pull the gridmet data from the start of the data archive (1979-01-01) to the present day.
+
+### running with Docker
+```
+docker run jsadler2/gridmet-agg:v0.1 snakemake
+```
+
+### running with Singularity
+We have to specify the full path to `snakemake` because it is not part of the system PATH in the Singularity container
+```
+singularity pull jsadler2/gridmet-agg:v0.1
+singularity exec gridmet-agg_v0_1.sif /opt/conda/snakemake
+```
+>>>>>>> [#7] update readme with container instructions
