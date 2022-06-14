@@ -1,0 +1,15 @@
+catchment_file_path: "https://github.com/USGS-R/drb-network-prep/blob/940073e8d77c911b6fb9dc4e3657aeab1162a158/2_process/out/GFv1_catchments_edited.gpkg?raw=true"
+
+data_vars: ['tmmx', 'tmmn', 'pr', 'srad', 'vs','rmax','rmin','sph']
+
+fabric_id: 'nhm'
+
+use_S3: True
+
+run_prefix: "drb"
+
+# leave blank if you want to run from 1979-01-01
+#start_date: "2022-05-09"
+
+# leave blank if you want to run through current date
+#end_date: "2022-06-13"
