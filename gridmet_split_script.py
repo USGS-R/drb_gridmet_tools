@@ -88,6 +88,9 @@ def create_weightmap(xarray_dict, polygon, output_data_folder, weightmap_var = N
     else:
         raise TypeError('polygon should be str path to shapefile or geodataframe')
 
+    polygon = polygon.to_crs('EPSG:4326')
+    print('geodataframe crs changed to EPSG:4326')
+
     ## Name output weightmap_file
     if weightmap_var is None:
         # If no var is specified, first var of xarray_dict will be used for generating weight file, and name of output will be generic: 'grd2shp_weights.pickle'
@@ -129,6 +132,9 @@ def g2shp_regridding(xarray_dict, polygon, weightmap_file, output_data_folder, g
     # Lsit of xarray.datasets
     vars_grd_list = list(xarray_dict.values())
 
+    polygon = polygon.to_crs('EPSG:4326')
+    print('geodataframe crs changed to EPSG:4326')
+
     ## initialize Grd2ShpXagg()
     g2s = grd2shp_xagg.Grd2ShpXagg()
     g2s.initialize(
@@ -148,7 +154,6 @@ def g2shp_regridding(xarray_dict, polygon, weightmap_file, output_data_folder, g
     g2s.run_weights()
     end = time.perf_counter()
     print('finished agg in {} second(s)'.format(round(end - start, 2)))
-    print(g2s)
 
     ## Saving output
     g2s.write_gm_file(opath=output_data_folder, prefix=g2s_file_prefix)
@@ -160,42 +165,3 @@ def g2shp_regridding(xarray_dict, polygon, weightmap_file, output_data_folder, g
 
     return g2s
 
-# Variables and run functions
-if __name__ =='__main__':
-
-    ## Variable definitions
-    ### official list of variables needed for drb-inland-salinity model
-    data_vars_shrt_all = ['tmmx', 'tmmn', 'pr', 'srad', 'vs','rmax','rmin','sph']
-    ### Catchment polygons
-    gdf_prms_path_edited = 'https://github.com/USGS-R/drb-network-prep/blob/940073e8d77c911b6fb9dc4e3657aeab1162a158/2_process/out/GFv1_catchments_edited.gpkg?raw=true'
-    gdf = gpd.read_file(gdf_prms_path_edited, layer = 'GFv1_catchments_edited')
-    ### date range
-    start_date = '1979-01-01'
-    end_date = '2022-01-01'
-    ### lat lon
-    lon_min, lat_min, lon_max, lat_max = gdf.total_bounds
-    ### output folder
-    output_path = './data/'
-
-    xarray_dict = get_gridmet_datasets(variable = data_vars_shrt_all,
-                                       start_date= start_date, end_date = end_date,
-                                       polygon_for_bbox = gdf)
-                                      # lat_min=round(lat_min,2), lon_min=round(lon_min,2),
-                                      # lat_max=round(lat_max,2), lon_max=round(lon_max,2))
-
-    weight_map_path = create_weightmap(xarray_dict = xarray_dict,
-                     polygon=gdf,
-                     output_data_folder = output_path,
-                     weightmap_var = 'tmmn')
-
-    ### Subset for streamlined testing
-    # subset = {key: xarray_dict[key] for key in ['tmmx']}
-
-    g2shp_regridding(xarray_dict= xarray_dict,
-                     polygon=gdf,
-                     weightmap_file= weight_map_path,
-                     g2s_file_prefix='t_',
-                     output_data_folder= output_path,
-                     g2s_time_var = 'day',
-                     g2s_lat_var = 'lat',
-                     g2s_lon_var = 'lon')
