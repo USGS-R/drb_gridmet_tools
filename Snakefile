@@ -1,112 +1,95 @@
-import pickle
 import geopandas as gpd
-from gridmet_split_script import get_gridmet_datasets, create_weightmap
+import xarray as xr
+from gridmet_split_script import get_gridmet_datasets, create_weightmap, g2shp_regridding
 from gridmet_aggregation_PRMS import ncdf_to_gdf, gridmet_prms_area_avg_agg
+import requests
+from datetime import datetime
 
-run_date = "2022_04_07"
-out_dir = "data/out"
-data_dir = "data/"
-drb_hru_file = "data/GFv1_catchments_edited.gpkg"
+todays_date = datetime.today().strftime('%Y_%m_%d')
+
+
+def get_final_files(wildcards):
+    files = [f"drb-gridmet/{config['fabric_id']}/{todays_date}/{config['run_prefix']}_climate_{todays_date}.nc"]
+    if config['fabric_id'] == 'nhm':
+        files.append(f"drb-gridmet/{config['fabric_id']}/{todays_date}/{config['run_prefix']}_climate_{todays_date}_segments.csv")
+    elif config['fabric_id'] == 'nhd':
+        pass
+    else:
+        raise ValueError("fabric_id of 'nhd' or 'nhm' expected") 
+    return files
+
 
 rule all:
     input:
-        f"{out_dir}/drb_climate_{run_date}.nc",
-        f"{out_dir}/drb_climate_{run_date}_segments.csv"
+        get_final_files
 
-
-rule fetch_drb_catchments:
-    output:
-        drb_hru_file
-    shell:
-        "wget https://github.com/USGS-R/drb-network-prep/blob/940073e8d77c911b6fb9dc4e3657aeab1162a158/2_process/out/GFv1_catchments_edited.gpkg?raw=true -O {output}"
-
-
-rule make_dataset_dict:
-    input:
-        drb_hru_file,
-    params:
-        data_vars = ['tmmx', 'tmmn', 'pr', 'srad', 'vs','rmax','rmin','sph'],
-        start_date = "1979-01-01-",
-        end_date = run_date.replace("_", "-")
-    output:
-        "{outdir}/dataset_dict_{run_date}.pickle"
-    run:
-        gdf = gpd.read_file(input[0], layer="GFv1_catchments_edited")
-        data_dict = get_gridmet_datasets(variable = params.data_vars,
-                                         start_date = params.start_date,
-                                         end_date = params.end_date,
-                                         polygon_for_bbox = gdf)
-        with open(output[0], "wb") as f:
-            pickle.dump(data_dict, f)
 
 
 rule make_weight_map:
-    input:
-        drb_hru_file,
-        f"{{outdir}}/dataset_dict_{run_date}.pickle"
     output:
-        "{outdir}/grd2shp_weights.pickle"
+        "drb-gridmet/{fabric_id}/grd2shp_weights.pickle"
     run:
-        gdf = gpd.read_file(input[0], layer="GFv1_catchments_edited")
-        with open(input[1], "rb") as f:
-            xarray_dict = pickle.load(f)
-        create_weightmap(xarray_dict = xarray_dict,
+        gdf = gpd.read_file(config['catchment_file_path'])
+        # getting just one date and one variable to make the weight map.
+        # the same weight map applies to all dates and all variables
+        data_dict = get_gridmet_datasets(variable="tmmn",
+                                         start_date="2001-01-01",
+                                         end_date="2001-01-02",
+                                         polygon_for_bbox=gdf)
+        create_weightmap(xarray_dict=data_dict,
                          polygon=gdf,
-                         output_data_folder = os.path.split(output[0])[0],
-                         weightmap_var = 'tmmn')
+                         output_data_folder = os.path.split(output[0])[0])
 
 
-rule aggregate_gridmet_to_polygons:
+rule aggregate_gridmet_to_polygons_one_var:
     input:
-        drb_hru_file,
-        "{outdir}/dataset_dict_{run_date}.pickle",
-        "{outdir}/grd2shp_weights.pickle"
+        "drb-gridmet/{fabric_id}/grd2shp_weights.pickle"
     output:
-        "{outdir}/drb_climate_{run_date}.nc"
+        "drb-gridmet/{fabric_id}/{todays_date}/{run_prefix}_var_{variable}_climate_{todays_date}.nc"
     run:
-        gdf = gpd.read_file(input[0], layer="GFv1_catchments_edited")
-        with open(input[1], "rb") as f:
-            xarray_dict = pickle.load(f)
-        g2shp_regridding(xarray_dict= xarray_dict,
+        gdf = gpd.read_file(config['catchment_file_path'])
+        data_dict = get_gridmet_datasets(variable=wildcards.variable,
+                                         start_date=config.get('start_date', "1979-01-01"),
+                                         end_date=config.get('end_date', todays_date.replace("_", "-")),
+                                         polygon_for_bbox=gdf)
+        g2shp_regridding(xarray_dict=data_dict,
                          polygon=gdf,
-                         weightmap_file= input[2],
-                         g2s_file_prefix='drb_',
+                         weightmap_file= input[0],
+                         g2s_file_prefix=f'{wildcards.run_prefix}_var_{wildcards.variable}_',
                          output_data_folder= os.path.split(output[0])[0],
                          g2s_time_var = 'day',
                          g2s_lat_var = 'lat',
                          g2s_lon_var = 'lon')
-        
-        
-rule make_nc_gdf:
+
+
+rule gather_gridmets:
     input:
-        drb_hru_file,
-        "{outdir}/drb_climate_{run_date}.nc"
+        expand("drb-gridmet/{fabric_id}/{todays_date}/{run_prefix}_var_{variable}_climate_{todays_date}.nc",
+               fabric_id=config['fabric_id'],
+               todays_date=todays_date,
+               run_prefix=config['run_prefix'],
+               variable=config['data_vars'])
     output:
-        "{outdir}/drb_climate_{run_date}_gdf.pickle"
+        "drb-gridmet/{fabric_id}/{todays_date}/{run_prefix}_climate_{todays_date}.nc"
     run:
-        gdf = gpd.read_file(input[0], layer="GFv1_catchments_edited")
-        gridmet_drb_gdf = ncdf_to_gdf(ncdf_path=input[1],
+        ds_list = [xr.open_dataset(nc_file) for nc_file in input]
+        xr.merge(ds_list).to_netcdf(output[0])
+        
+        
+rule aggregate_gridmet_polygons_to_flowlines:
+    input:
+        "drb-gridmet/{fabric_id}/{todays_date}/{run_prefix}_climate_{todays_date}.nc"
+    output:
+        "drb-gridmet/{fabric_id}/{todays_date}/{run_prefix}_climate_{todays_date}_segments.csv"
+    run:
+        gdf = gpd.read_file(config['catchment_file_path'])
+        gridmet_drb_gdf = ncdf_to_gdf(ncdf_path=input[0],
                                       shp = gdf,
                                       left_on = 'geomid',
                                       right_on_index = True)
-        with open(output[0], "wb") as f:
-            pickle.dump(gridmet_drb_gdf, f)
-
-
-rule aggregate_gridmet_polygons_to_flowlines:
-    input:
-        "{outdir}/drb_climate_{run_date}_gdf.pickle",
-        "{outdir}/drb_climate_{run_date}.nc"
-    params:
-        data_vars = ['tmmx', 'tmmn', 'pr', 'srad', 'vs','rmax','rmin','sph'],
-    output:
-        "{outdir}/drb_climate_{run_date}_segments.csv"
-    run:
-        with open(input[0], "rb") as f:
-            gridmet_drb_gdf = pickle.load(f)
         df_agg = gridmet_prms_area_avg_agg(gridmet_drb_gdf,
                                            groupby_cols = ['PRMS_segid',"time"],
-                                           val_colnames = params.data_vars,
+                                           val_colnames = config['data_vars'],
                                            wgt_col='hru_area_m2',
                                            output_path= output[0])
 
