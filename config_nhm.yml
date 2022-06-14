@@ -1,8 +1,10 @@
+# probably don't change this
 catchment_file_path: "https://github.com/USGS-R/drb-network-prep/blob/940073e8d77c911b6fb9dc4e3657aeab1162a158/2_process/out/GFv1_catchments_edited.gpkg?raw=true"
 
-data_vars: ['tmmx', 'tmmn', 'pr', 'srad', 'vs','rmax','rmin','sph']
-
+# probably don't change this
 fabric_id: 'nhm'
+
+data_vars: ['tmmx', 'tmmn', 'pr', 'srad', 'vs','rmax','rmin','sph']
 
 use_S3: True
 
