@@ -10,6 +10,8 @@ data_vars: ['tmmx', 'tmmn', 'pr', 'srad', 'vs','rmax','rmin','sph']
 
 use_S3: True
 
+make_zarr: True
+
 run_prefix: "drb"
 
 # leave blank if you want to run from 1979-01-01

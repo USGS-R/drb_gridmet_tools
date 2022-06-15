@@ -20,16 +20,24 @@ final_seg_file_path = seg_file_path.format(fabric_id = config['fabric_id'],
                                            todays_date=todays_date,
                                            run_prefix=config['run_prefix'])
 
-final_files.append(final_nc_file_path)
+zarr_path = "drb-gridmet/{fabric_id}/{todays_date}/{run_prefix}_climate_{todays_date}.zarr.ind"
+final_zarr_path = zarr_path.format(fabric_id = config['fabric_id'],
+                                   todays_date=todays_date,
+                                   run_prefix=config['run_prefix'])
+
 
 if config['fabric_id'] == 'nhm':
     final_files.append(final_seg_file_path)
+
+if config['make_zarr']:
+    final_files.append(final_zarr_path)
 
 if config['use_S3']:
     S3 = S3RemoteProvider(keep_local=True)
     final_files = [S3.remote(f) for f in final_files]
     nc_file_path = S3.remote(nc_file_path)
     seg_file_path = S3.remote(seg_file_path)
+
 
 
 rule all:
@@ -108,4 +116,52 @@ rule aggregate_gridmet_polygons_to_flowlines:
                                            val_colnames = config['data_vars'],
                                            wgt_col='hru_area_m2',
                                            output_path= output[0])
+
+checkpoint write_zarr:
+    input:
+        "drb-gridmet/{filename}.nc"
+    output:
+        directory("/tmp/{filename}.zarr")
+    run:
+        ds = xr.open_dataset(input[0])
+        ds = ds.chunk({"time": len(ds.time), config["id_col"]: 100})
+        ds.to_zarr(output[0])
+
+
+def get_zarr_files(wildcards):
+    zarr_files = []
+    for path, currentDirectory, files in os.walk(f"/tmp/{wildcards.filename}.zarr"):
+        for file in files:
+            scratch_path = os.path.join(path, file)
+            drb_path = scratch_path.replace("/tmp", "drb-gridmet")
+            zarr_files.append(drb_path)
+    return zarr_files
+
+
+rule write_zarr_ind:
+    input:
+        "/tmp/{filename}.zarr",
+        get_zarr_files
+    output:
+        "drb-gridmet/{filename}.zarr.ind"
+    shell:
+        "touch {output[0]}"
+
+if config['use_S3']:
+    rule copy_from_scratch_to_s3:
+        input:
+            "/tmp/{filename}.zarr/{zarr_file}"
+        output:
+            S3.remote("drb-gridmet/{filename}.zarr/{zarr_file}")
+        shell:
+            "cp {input[0]} {output[0]}"
+
+else:
+    rule copy_from_scratch_to_s3:
+        input:
+            "/tmp/{filename}.zarr/{zarr_file}"
+        output:
+            "drb-gridmet/{filename}.zarr/{zarr_file}"
+        shell:
+            "cp {input[0]} {output[0]}"
 

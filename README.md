@@ -44,7 +44,7 @@ It may be helpful instead to run it interactively
 ```
 salloc -N 1 -n 8 -t 10:00:00 -p cpu -A iidd
 module load singularity
-singularity exec-agg_v0.1.sif /opt/conda/bin/snakemake -j --configfile config_nhd.yml 
+singularity exec-agg_v0.3.sif /opt/conda/bin/snakemake -j --configfile config_nhd.yml 
 ```
 
 ### Option B. Executing in a different directory 
@@ -55,7 +55,7 @@ cd drb_gridmet_tools
 ```
 2. Pull down Docker image into a Singularity file
 ```
-singularity pull docker://jsadler2/gridmet-agg:v0.1
+singularity pull docker://jsadler2/gridmet-agg:v0.3
 ```
 3. Do Steps 2-4 from Option A.
 
