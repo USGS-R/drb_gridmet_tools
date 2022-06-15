@@ -5,7 +5,7 @@ import xarray as xr
 import time
 
 # ncdf_to_gdf() function converts ncdf to dataset and merged with shpfile information (geometry + area)
-def ncdf_to_gdf(ncdf_path, shp, left_on = 'geomid', right_on_index = True, gpkg_layer = None):
+def ncdf_to_gdf(ncdf_path, shp, left_on, right_on, gpkg_layer = None):
 
     """
     :param str ncdf_path: path to regridded ncdf file (output of g2shp_regridding())
@@ -27,7 +27,7 @@ def ncdf_to_gdf(ncdf_path, shp, left_on = 'geomid', right_on_index = True, gpkg_
         print('shp must be path to geospatial file or a geodataframe')
 
     ## Merge ncdf w/ shapefile (the shpfile has area info) & convert to GeoDataFrame
-    gridmet_drb_df = xr_mapped_df.merge(gdf, how ='left', left_on = left_on, right_index = right_on_index)
+    gridmet_drb_df = xr_mapped_df.merge(gdf, how ='left', left_on = left_on, right_on = right_on)
     gridmet_drb_gdf = gpd.GeoDataFrame(gridmet_drb_df)
 
     return gridmet_drb_gdf

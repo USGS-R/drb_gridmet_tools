@@ -84,8 +84,12 @@ rule gather_gridmets:
     output:
         nc_file_path
     run:
+        gdf = gpd.read_file(config['catchment_file_path'])
         ds_list = [xr.open_dataset(nc_file) for nc_file in input]
-        xr.merge(ds_list).to_netcdf(output[0])
+        ds_combined = xr.merge(ds_list)
+        ds_combined = ds_combined.assign_coords({config["id_col"]: ("geomid", gdf[config["id_col"]])}).swap_dims({"geomid":config["id_col"]})
+        ds_combined = ds_combined.drop("geomid")
+        ds_combined.to_netcdf(output[0])
         
         
 rule aggregate_gridmet_polygons_to_flowlines:
@@ -97,8 +101,8 @@ rule aggregate_gridmet_polygons_to_flowlines:
         gdf = gpd.read_file(config['catchment_file_path'])
         gridmet_drb_gdf = ncdf_to_gdf(ncdf_path=input[0],
                                       shp = gdf,
-                                      left_on = 'geomid',
-                                      right_on_index = True)
+                                      left_on = config["id_col"],
+                                      right_on = config["id_col"])
         df_agg = gridmet_prms_area_avg_agg(gridmet_drb_gdf,
                                            groupby_cols = ['PRMS_segid',"time"],
                                            val_colnames = config['data_vars'],
