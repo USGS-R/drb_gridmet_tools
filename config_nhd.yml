@@ -1,0 +1,23 @@
+# probably don't change these
+catchment_file_path: "https://github.com/USGS-R/drb-network-prep/blob/main/1_fetch/out/NHDPlusv2_catchments.gpkg?raw=true"
+
+fabric_id: 'nhd'
+
+
+id_col: "COMID"
+
+# feel free to change these 
+data_vars: ['tmmx', 'tmmn', 'pr', 'srad', 'vs','rmax','rmin','sph']
+
+use_S3: True
+
+make_zarr: True
+
+run_prefix: "drb"
+
+# if not specified, data will be processed from 1979-01-01
+#start_date: "2022-05-09"
+
+# if not specified, data will be processed to today's date 
+#end_date: "2022-06-13"
+

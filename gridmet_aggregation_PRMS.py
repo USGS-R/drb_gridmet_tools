@@ -5,7 +5,7 @@ import xarray as xr
 import time
 
 # ncdf_to_gdf() function converts ncdf to dataset and merged with shpfile information (geometry + area)
-def ncdf_to_gdf(ncdf_path, shp, left_on = 'geomid', right_on_index = True, gpkg_layer = None):
+def ncdf_to_gdf(ncdf_path, shp, left_on, right_on, gpkg_layer = None):
 
     """
     :param str ncdf_path: path to regridded ncdf file (output of g2shp_regridding())
@@ -27,7 +27,7 @@ def ncdf_to_gdf(ncdf_path, shp, left_on = 'geomid', right_on_index = True, gpkg_
         print('shp must be path to geospatial file or a geodataframe')
 
     ## Merge ncdf w/ shapefile (the shpfile has area info) & convert to GeoDataFrame
-    gridmet_drb_df = xr_mapped_df.merge(gdf, how ='left', left_on = left_on, right_index = right_on_index)
+    gridmet_drb_df = xr_mapped_df.merge(gdf, how ='left', left_on = left_on, right_on = right_on)
     gridmet_drb_gdf = gpd.GeoDataFrame(gridmet_drb_df)
 
     return gridmet_drb_gdf
@@ -76,27 +76,3 @@ def gridmet_prms_area_avg_agg(df, groupby_cols, val_colnames, wgt_col, output_pa
 
     return df_final
 
-# Define variables and run
-if __name__ =='__main__':
-
-    ## Variable definitions
-    gdf_prms_path_edited = 'https://github.com/USGS-R/drb-network-prep/blob/940073e8d77c911b6fb9dc4e3657aeab1162a158/2_process/out/GFv1_catchments_edited.gpkg?raw=true'
-    gdf = gpd.read_file(gdf_prms_path_edited, layer='GFv1_catchments_edited')
-    gridmet_ncdf = './data/t_climate_2022_03_31.nc'
-    data_vars_shrt_all = ['tmmx', 'tmmn', 'pr', 'srad', 'vs', 'rmax', 'rmin', 'sph']
-
-    ## Create dataframe and merge with shapefile information
-    gridmet_drb_gdf = ncdf_to_gdf(ncdf_path=gridmet_ncdf,
-                                 shp = gdf,
-                                 left_on = 'geomid',
-                                 right_on_index = True)
-
-    ## run aggregation on PRMS_segid and time
-    df_agg = gridmet_prms_area_avg_agg(gridmet_drb_gdf,
-                                         groupby_cols = ['PRMS_segid',"time"],
-                                         val_colnames = data_vars_shrt_all,
-                                         wgt_col='hru_area_m2',
-                                         output_path= None)
-
-    ## Uncomment to run
-    # df_agg.reset_index().to_csv('../drb-inland-salinity-ml/1_fetch/in/grdmet_drb_agg_032321.csv', index = False)
