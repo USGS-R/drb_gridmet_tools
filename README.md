@@ -37,7 +37,7 @@ You can run the workflow on Tallgrass either in batch mode or interactively. Sub
 
 You can run the workflow via `sbatch` 
 ```
-sbatch -A iidd slurm/launch_snakemake.slum config_nhd.yml
+sbatch -A iidd slurm/launch_snakemake.slurm config_nhd.yml
 ```
 It may be helpful instead to run it interactively
 
