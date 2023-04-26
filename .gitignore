@@ -9,3 +9,4 @@
 *.shx
 *.dbf
 *.ipynb_checkpoints/
+.Rproj.user
